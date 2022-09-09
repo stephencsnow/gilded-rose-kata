@@ -53,6 +53,14 @@ class BackstagePasses(ItemWrapper):
             self._increment_quality(1)
 
 
+class Conjured(ItemWrapper):
+    def _update_quality(self, sell_in: int):
+        if sell_in <= 0:
+            self._decrement_quality(4)
+        else:
+            self._decrement_quality(2)
+
+
 class GenericItem(ItemWrapper):
     pass
 
@@ -69,6 +77,8 @@ class GildedRose(object):
                     self.items.append(Sulfuras(item))
                 case ["Backstage", "passes", *rest]:
                     self.items.append(BackstagePasses(item))
+                case ["Conjured", *rest]:
+                    self.items.append(Conjured(item))
                 case _:
                     self.items.append(GenericItem(item))
 
