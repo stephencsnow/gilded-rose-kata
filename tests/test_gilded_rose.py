@@ -1,16 +1,19 @@
-# -*- coding: utf-8 -*-
-import unittest
-
-from gilded_rose import Item, GildedRose
+from gilded_rose import GildedRose
+from tests.texttest_fixture import get_fixture_items, get_day_string
 
 
-class GildedRoseTest(unittest.TestCase):
-    def test_foo(self):
-        items = [Item("foo", 0, 0)]
-        gilded_rose = GildedRose(items)
-        gilded_rose.update_quality()
-        self.assertEquals("foo", items[0].name)
+def test_gold():
+    # Arrange
+    with open("tests/gold.txt") as f:
+        gold = f.read()
 
+    gold_days = gold.rstrip().split("\n\n")
 
-if __name__ == '__main__':
-    unittest.main()
+    items = get_fixture_items()
+
+    # Act / Assert
+    for day, gold_day in enumerate(gold_days):
+        actual = get_day_string(day, items)
+        assert actual == gold_day, f"Failed on day {day}"
+
+        GildedRose(items).update_quality()
