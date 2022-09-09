@@ -6,6 +6,11 @@ class ItemWrapper:
         self._update_quality(self.item.sell_in)
         self._update_sell_in()
 
+    def _increment_quality(self, amount: int = 1):
+        """Increment quality, but do not go above the max"""
+        MAX_QUALITY = 50
+        self.item.quality = min([MAX_QUALITY, self.item.quality + amount])
+
     def _update_quality(self, sell_in: int):
         if (
             self.item.name != "Aged Brie"
@@ -15,15 +20,12 @@ class ItemWrapper:
                 if self.item.name != "Sulfuras, Hand of Ragnaros":
                     self.item.quality = self.item.quality - 1
         else:
-            if self.item.quality < 50:
-                self.item.quality = self.item.quality + 1
-                if self.item.name == "Backstage passes to a TAFKAL80ETC concert":
-                    if sell_in < 11:
-                        if self.item.quality < 50:
-                            self.item.quality = self.item.quality + 1
-                    if sell_in < 6:
-                        if self.item.quality < 50:
-                            self.item.quality = self.item.quality + 1
+            self._increment_quality()
+            if self.item.name == "Backstage passes to a TAFKAL80ETC concert":
+                if sell_in < 11:
+                    self._increment_quality()
+                if sell_in < 6:
+                    self._increment_quality()
         if sell_in <= 0:
             if self.item.name != "Aged Brie":
                 if self.item.name != "Backstage passes to a TAFKAL80ETC concert":
@@ -33,8 +35,7 @@ class ItemWrapper:
                 else:
                     self.item.quality = self.item.quality - self.item.quality
             else:
-                if self.item.quality < 50:
-                    self.item.quality = self.item.quality + 1
+                self._increment_quality()
 
     def _update_sell_in(self):
         if self.item.name != "Sulfuras, Hand of Ragnaros":
