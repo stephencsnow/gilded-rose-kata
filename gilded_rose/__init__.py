@@ -2,7 +2,11 @@ class ItemWrapper:
     def __init__(self, item: "Item"):
         self.item = item
 
-    def update_quality(self):
+    def update(self):
+        self._update_quality(self.item.sell_in)
+        self._update_sell_in()
+
+    def _update_quality(self, sell_in: int):
         if (
             self.item.name != "Aged Brie"
             and self.item.name != "Backstage passes to a TAFKAL80ETC concert"
@@ -14,15 +18,13 @@ class ItemWrapper:
             if self.item.quality < 50:
                 self.item.quality = self.item.quality + 1
                 if self.item.name == "Backstage passes to a TAFKAL80ETC concert":
-                    if self.item.sell_in < 11:
+                    if sell_in < 11:
                         if self.item.quality < 50:
                             self.item.quality = self.item.quality + 1
-                    if self.item.sell_in < 6:
+                    if sell_in < 6:
                         if self.item.quality < 50:
                             self.item.quality = self.item.quality + 1
-        if self.item.name != "Sulfuras, Hand of Ragnaros":
-            self.item.sell_in = self.item.sell_in - 1
-        if self.item.sell_in < 0:
+        if sell_in <= 0:
             if self.item.name != "Aged Brie":
                 if self.item.name != "Backstage passes to a TAFKAL80ETC concert":
                     if self.item.quality > 0:
@@ -34,6 +36,10 @@ class ItemWrapper:
                 if self.item.quality < 50:
                     self.item.quality = self.item.quality + 1
 
+    def _update_sell_in(self):
+        if self.item.name != "Sulfuras, Hand of Ragnaros":
+            self.item.sell_in = self.item.sell_in - 1
+
 
 class GildedRose(object):
     def __init__(self, items):
@@ -41,7 +47,7 @@ class GildedRose(object):
 
     def update_quality(self):
         for item in self.items:
-            item.update_quality()
+            item.update()
 
 
 class Item:
