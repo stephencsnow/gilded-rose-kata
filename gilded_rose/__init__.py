@@ -11,31 +11,36 @@ class ItemWrapper:
         MAX_QUALITY = 50
         self.item.quality = min([MAX_QUALITY, self.item.quality + amount])
 
+    def _decrement_quality(self, amount: int = 1):
+        """Decrement quality, but do not go below 0"""
+        self.item.quality = max([0, self.item.quality - amount])
+
     def _update_quality(self, sell_in: int):
-        if (
-            self.item.name != "Aged Brie"
-            and self.item.name != "Backstage passes to a TAFKAL80ETC concert"
-        ):
-            if self.item.quality > 0:
-                if self.item.name != "Sulfuras, Hand of Ragnaros":
-                    self.item.quality = self.item.quality - 1
-        else:
-            self._increment_quality()
-            if self.item.name == "Backstage passes to a TAFKAL80ETC concert":
-                if sell_in < 11:
-                    self._increment_quality()
-                if sell_in < 6:
-                    self._increment_quality()
-        if sell_in <= 0:
-            if self.item.name != "Aged Brie":
-                if self.item.name != "Backstage passes to a TAFKAL80ETC concert":
-                    if self.item.quality > 0:
-                        if self.item.name != "Sulfuras, Hand of Ragnaros":
-                            self.item.quality = self.item.quality - 1
+        tokenized_name = [name.rstrip(",") for name in self.item.name.split()]
+        match tokenized_name:
+            case ["Aged", "Brie"]:
+                if sell_in <= 0:
+                    self._increment_quality(2)
                 else:
-                    self.item.quality = self.item.quality - self.item.quality
-            else:
-                self._increment_quality()
+                    self._increment_quality(1)
+            case ["Sulfuras", *rest]:
+                # Sulfuras does not get updated
+                return
+            case ["Backstage", "passes", *rest]:
+                if sell_in <= 0:
+                    self.item.quality = 0
+                elif sell_in <= 5:
+                    self._increment_quality(3)
+                elif sell_in <= 10:
+                    self._increment_quality(2)
+                else:
+                    self._increment_quality(1)
+            case _:
+                # generic item
+                if sell_in <= 0:
+                    self._decrement_quality(2)
+                else:
+                    self._decrement_quality(1)
 
     def _update_sell_in(self):
         if self.item.name != "Sulfuras, Hand of Ragnaros":
