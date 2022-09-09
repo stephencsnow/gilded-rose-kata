@@ -16,40 +16,61 @@ class ItemWrapper:
         self.item.quality = max([0, self.item.quality - amount])
 
     def _update_quality(self, sell_in: int):
-        tokenized_name = [name.rstrip(",") for name in self.item.name.split()]
-        match tokenized_name:
-            case ["Aged", "Brie"]:
-                if sell_in <= 0:
-                    self._increment_quality(2)
-                else:
-                    self._increment_quality(1)
-            case ["Sulfuras", *rest]:
-                # Sulfuras does not get updated
-                return
-            case ["Backstage", "passes", *rest]:
-                if sell_in <= 0:
-                    self.item.quality = 0
-                elif sell_in <= 5:
-                    self._increment_quality(3)
-                elif sell_in <= 10:
-                    self._increment_quality(2)
-                else:
-                    self._increment_quality(1)
-            case _:
-                # generic item
-                if sell_in <= 0:
-                    self._decrement_quality(2)
-                else:
-                    self._decrement_quality(1)
+        if sell_in <= 0:
+            self._decrement_quality(2)
+        else:
+            self._decrement_quality(1)
 
     def _update_sell_in(self):
-        if self.item.name != "Sulfuras, Hand of Ragnaros":
-            self.item.sell_in = self.item.sell_in - 1
+        self.item.sell_in = self.item.sell_in - 1
+
+
+class AgedBrie(ItemWrapper):
+    def _update_quality(self, sell_in: int):
+        if sell_in <= 0:
+            self._increment_quality(2)
+        else:
+            self._increment_quality(1)
+
+
+class Sulfuras(ItemWrapper):
+    def _update_quality(self, sell_in: int):
+        pass
+
+    def _update_sell_in(self):
+        pass
+
+
+class BackstagePasses(ItemWrapper):
+    def _update_quality(self, sell_in: int):
+        if sell_in <= 0:
+            self.item.quality = 0
+        elif sell_in <= 5:
+            self._increment_quality(3)
+        elif sell_in <= 10:
+            self._increment_quality(2)
+        else:
+            self._increment_quality(1)
+
+
+class GenericItem(ItemWrapper):
+    pass
 
 
 class GildedRose(object):
     def __init__(self, items):
-        self.items = [ItemWrapper(item) for item in items]
+        self.items: list[ItemWrapper] = []
+        for item in items:
+            tokenized_name = [name.rstrip(",") for name in item.name.split()]
+            match tokenized_name:
+                case ["Aged", "Brie"]:
+                    self.items.append(AgedBrie(item))
+                case ["Sulfuras", *rest]:
+                    self.items.append(Sulfuras(item))
+                case ["Backstage", "passes", *rest]:
+                    self.items.append(BackstagePasses(item))
+                case _:
+                    self.items.append(GenericItem(item))
 
     def update_quality(self):
         for item in self.items:
